@@ -8,6 +8,14 @@ bool consume(char *op) {
   return true;
 }
 
+Token *consume_ident() {
+  if (token->kind != TK_IDENT)
+    return NULL;
+  Token *tok = token;
+  token = token->next;
+  return tok;
+}
+
 void expect(char *op) {
   if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len))
     error_at(token->str, "'%s'ではありません", op);
@@ -102,9 +110,32 @@ Node *new_node_num(int val) {
   return node;
 }
 
-// expr = equality
+// program = stmt*
+void program() {
+  int i = 0;
+  while (!at_eof())
+    code[i++] = stmt(); // code[i] = stmt()　パース結果の格納
+  code[i] = NULL;
+}
+
+// stmt = expr ";"
+Node *stmt() {
+  Node *node = expr();
+  expect(";");
+  return node;
+}
+
+// expr = assign
 Node *expr() {
-  return equality();
+  return assign();
+}
+
+// assign = equality ("=" assign)?
+Node *assign() {
+  Node *node = equality();
+  if (consume("="))
+    node = new_node(ND_ASSIGN, node, assign());
+  return node;
 }
 
 // equality = relational ("==" relational | "!=" relational)*
@@ -153,6 +184,7 @@ Node *add() {
   }
 }
 
+// mul = unary ("*" unary | "/" unary)*
 Node *mul() {
   Node *node = unary();
 
@@ -166,6 +198,7 @@ Node *mul() {
   }
 }
 
+// unary = ("+" | "-")? primary
 Node *unary() {
   if (consume("+"))
     return unary();
@@ -174,6 +207,7 @@ Node *unary() {
   return primary();
 }
 
+ // primary = num | ident | "(" expr ")"
 Node *primary() {
   if (consume("(")) {
     Node *node = expr();
@@ -181,5 +215,12 @@ Node *primary() {
     return node;
   }
 
+  Token *tok = consume_ident(); // freeしたほうが良さそう
+  if (tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+    node->offset = (tok->str[0] - 'a' + 1) * 8;
+    return node;
+  }
   return new_node_num(expect_number());
 }

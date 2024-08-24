@@ -25,15 +25,17 @@ struct Token {
 
 // 抽象構文木のノードの種類
 typedef enum {
-  ND_ADD, // +
-  ND_SUB, // -
-  ND_MUL, // *
-  ND_DIV, // /
-  ND_EQ,  // ==
-  ND_NE,  // !=
-  ND_LT,  // <
-  ND_LE,  // <=
-  ND_NUM, // 整数
+  ND_ADD,       // +
+  ND_SUB,       // -
+  ND_MUL,       // *
+  ND_DIV,       // /
+  ND_EQ,        // ==
+  ND_NE,        // !=
+  ND_LT,        // <
+  ND_LE,        // <=
+  ND_ASSIGN,    // =
+  ND_LVAR,      // ローカル変数
+  ND_NUM,       // 整数
 } NodeKind;
 
 // 抽象構文木のノードの型
@@ -43,16 +45,19 @@ struct Node {
   Node *lhs;     // 左辺
   Node *rhs;     // 右辺
   int val;       // kindがND_NUMの場合のみ使う
+  int offset;    // kindがND_LVARの場合のみ使う
 };
 
 // グローバル変数
 extern Token *token;     // 現在着目しているトークン
 extern char *user_input; // 入力プログラム
+extern Node *code[100];  // コード生成時に使うバッファ
 
 // プロトタイプ宣言
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
+Token *consume_ident(); // 
 void expect(char *op);
 int expect_number();
 bool at_eof();
@@ -60,11 +65,15 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 Token *tokenize(char *p);
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
-Node *expr();
-Node *equality();
-Node *relational();
-Node *add();
-Node *mul();
-Node *unary();
-Node *primary();
+
+void program();         // program = stmt*
+Node *stmt();           // stmt = expr ";"
+Node *expr();           // expr = assign
+Node *assign();         // assign = equality ("=" assign)?
+Node *equality();       // equality = relational ("==" relational | "!=" relational)*
+Node *relational();     // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
+Node *add();            // add = mul ("+" mul | "-" mul)*
+Node *mul();            // mul = unary ("*" unary | "/" unary)*
+Node *unary();          // unary = ("+" | "-")? primary
+Node *primary();        // primary = num | ident | "(" expr ")"
 void gen(Node *node);
