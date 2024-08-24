@@ -66,7 +66,7 @@ Token *tokenize(char *p) {
     }
 
     // 1文字の演算子
-    if (strchr("+-*/()<>", *p)) {
+    if (strchr("+-*/()<>;", *p)) {
       cur = new_token(TK_RESERVED, cur, p++, 1);
       continue;
     }
