@@ -63,12 +63,20 @@ Token *tokenize(char *p) {
       continue;
     }
 
+    // 数値
     if (isdigit(*p)) {
       cur = new_token(TK_NUM, cur, p, 0);
       char *q = p;
       cur->val = strtol(p, &p, 10); // 数値を読み取った分だけpを進める
       cur->len = p - q;
       continue;
+    }
+
+    // 一文字の識別子
+    if ('a' <= *p && *p <= 'z') {
+        cur = new_token(TK_IDENT, cur, p++, 1);
+        cur->len = 1;
+        continue;
     }
 
     error("トークナイズできません");
