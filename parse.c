@@ -71,6 +71,13 @@ Token *tokenize(char *p) {
       continue;
     }
 
+    // return
+    if (startswith(p, "return") && !isalnum(p[6])) {
+      cur = new_token(TK_RETURN, cur, p, 6);
+      p += 6;
+      continue;
+    }
+
     // 識別子
     if ('a' <= *p && *p <= 'z') {
         cur = new_token(TK_IDENT, cur, p, 0);

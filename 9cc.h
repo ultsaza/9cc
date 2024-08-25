@@ -11,6 +11,7 @@ typedef enum {
   TK_IDENT,    // 識別子
   TK_NUM,      // 整数トークン
   TK_EOF,      // 入力の終わりを表すトークンs
+  TK_RETURN,   // return
 } TokenKind;
 
 // トークン型
@@ -80,7 +81,7 @@ Node *new_node_num(int val);
 LVar *find_lvar(Token *tok);
 
 void program();         // program = stmt*
-Node *stmt();           // stmt = expr ";"
+Node *stmt();           // stmt = expr ";" | "return" expr ";"
 Node *expr();           // expr = assign
 Node *assign();         // assign = equality ("=" assign)?
 Node *equality();       // equality = relational ("==" relational | "!=" relational)*
