@@ -73,6 +73,7 @@ void error_at(char *loc, char *fmt, ...);
 int is_alnum(char c);
 bool consume(char *op);
 Token *consume_ident();
+Token *consume_return();
 void expect(char *op);
 int expect_number();
 bool at_eof();
