@@ -48,10 +48,22 @@ struct Node {
   int offset;    // kindがND_LVARの場合のみ使う
 };
 
+typedef struct LVar LVar;
+
+// ローカル変数の型
+struct LVar {
+  LVar *next; // 次の変数かNULL
+  char *name; // 変数の名前
+  int len;    // 名前の長さ
+  int offset; // RBPからのオフセット
+};
+
+
 // グローバル変数
 extern Token *token;     // 現在着目しているトークン
 extern char *user_input; // 入力プログラム
 extern Node *code[100];  // コード生成時に使うバッファ
+extern LVar *locals;     // ローカル変数(連結リスト)
 
 // プロトタイプ宣言
 void error(char *fmt, ...);
