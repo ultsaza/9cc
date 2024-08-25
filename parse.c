@@ -66,9 +66,16 @@ Token *tokenize(char *p) {
     }
 
     // 1文字の演算子
-    if (strchr("+-*/()<>;", *p)) {
+    if (strchr("+-*/()<>=;", *p)) {
       cur = new_token(TK_RESERVED, cur, p++, 1);
       continue;
+    }
+
+    // 識別子
+    if ('a' <= *p && *p <= 'z') {
+        cur = new_token(TK_IDENT, cur, p++, 1);
+        cur->len = 1;
+        continue;
     }
 
     // 数値
@@ -80,16 +87,9 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    // 一文字の識別子
-    if ('a' <= *p && *p <= 'z') {
-        cur = new_token(TK_IDENT, cur, p++, 1);
-        cur->len = 1;
-        continue;
-    }
-
     error("トークナイズできません");
   }
-
+  
   new_token(TK_EOF, cur, p, 0);
   return head.next;
 }
@@ -220,6 +220,7 @@ Node *primary() {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
     node->offset = (tok->str[0] - 'a' + 1) * 8;
+    free(tok);
     return node;
   }
   return new_node_num(expect_number());
