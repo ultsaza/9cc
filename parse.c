@@ -72,7 +72,7 @@ Token *tokenize(char *p) {
     }
 
     // return
-    if (startswith(p, "return") && !isalnum(p[6])) {
+    if (startswith(p, "return") && !is_alnum(p[6])) {
       cur = new_token(TK_RETURN, cur, p, 6);
       p += 6;
       continue;
@@ -135,12 +135,23 @@ void program() {
   code[i] = NULL;
 }
 
-// stmt = expr ";"
+// stmt = expr ";"= | "return" expr ";"
 Node *stmt() {
-  Node *node = expr();
-  expect(";");
+  Node *node;
+
+  if (consume(TK_RETURN)) {
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_RETURN;
+    node->lhs = expr();
+  } else {
+    node = expr();
+  }
+
+  if (!consume(';'))
+    error_at(token->str, "';'ではないトークンです");
   return node;
 }
+
 
 // expr = assign
 Node *expr() {
