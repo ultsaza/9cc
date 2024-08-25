@@ -77,6 +77,7 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 Token *tokenize(char *p);
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+LVar *find_lvar(Token *tok);
 
 void program();         // program = stmt*
 Node *stmt();           // stmt = expr ";"
