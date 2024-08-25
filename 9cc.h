@@ -69,6 +69,7 @@ extern LVar *locals;     // ローカル変数(連結リスト)
 // プロトタイプ宣言
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
+int is_alnum(char c);
 bool consume(char *op);
 Token *consume_ident();
 void expect(char *op);
