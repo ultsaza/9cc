@@ -73,8 +73,10 @@ Token *tokenize(char *p) {
 
     // 識別子
     if ('a' <= *p && *p <= 'z') {
-        cur = new_token(TK_IDENT, cur, p++, 1);
-        cur->len = 1;
+        cur = new_token(TK_IDENT, cur, p, 0);
+        char *q = p;
+        p += strspn(p, "abcdefghijklmnopqrstuvwxyz");
+        cur->len = p - q;
         continue;
     }
 
