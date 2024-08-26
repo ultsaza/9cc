@@ -33,6 +33,14 @@ Token *consume_if() {
   return tok;
 }
 
+Token *consume_else() {
+  if (token->kind != TK_ELSE)
+    return NULL;
+  Token *tok = token;
+  token = token->next;
+  return tok;
+}
+
 void expect(char *op) {
   if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len))
     error_at(token->str, "'%s'ではありません", op);
@@ -95,6 +103,20 @@ Token *tokenize(char *p) {
       continue;
     }
 
+    // if
+    if (startswith(p, "if") && !is_alnum(p[2])) {
+      cur = new_token(TK_IF, cur, p, 2);
+      p += 2;
+      continue;
+    }
+
+    // else
+    if (startswith(p, "else") && !is_alnum(p[4])) {
+      cur = new_token(TK_ELSE, cur, p, 4);
+      p += 4;
+      continue;
+    }
+
     // 識別子
     if ('a' <= *p && *p <= 'z') {
         cur = new_token(TK_IDENT, cur, p, 0);
@@ -152,19 +174,32 @@ void program() {
   code[i] = NULL;
 }
 
-// stmt = expr ";"= | "return" expr ";"
+// stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "return" expr ";"
 Node *stmt() {
   Node *node;
-  Token *tok = consume_return(); // freeしたほうが良さそう
-
-  if (tok) {
+  Token *tok_return = consume_return(); // freeしたほうが良さそう
+  Token *tok_if = consume_if();
+  Token *tok_else = consume_else();
+  if (tok_return) {
     node = calloc(1, sizeof(Node));
     node->kind = ND_RETURN;
     node->lhs = expr();
-  } else {
+  } else if (tok_if) {
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_IF;
+    expect("(");
+    node->lhs = expr();
+    expect(")");
+    node->rhs = stmt();
+    if (tok_else) {
+      node->kind = ND_ELSE;
+      node->lhs = stmt();
+    }
+    return node;
+  }
+  else {
     node = expr();
   }
-
   if (!consume(";"))
     error_at(token->str, "';'ではないトークンです");
   return node;
