@@ -24,6 +24,15 @@ Token *consume_return() {
   return tok;
 }
 
+
+Token *consume_if() {
+  if (token->kind != TK_IF)
+    return NULL;
+  Token *tok = token;
+  token = token->next;
+  return tok;
+}
+
 void expect(char *op) {
   if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len))
     error_at(token->str, "'%s'ではありません", op);

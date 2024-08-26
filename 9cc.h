@@ -12,6 +12,8 @@ typedef enum {
   TK_NUM,      // 整数トークン
   TK_EOF,      // 入力の終わりを表すトークンs
   TK_RETURN,   // return
+  TK_IF,       // if
+  TK_ELSE,     // else
 } TokenKind;
 
 // トークン型
@@ -37,7 +39,9 @@ typedef enum {
   ND_ASSIGN,    // =
   ND_LVAR,      // ローカル変数
   ND_NUM,       // 整数
-  ND_RETURN,    // return
+  ND_RETURN,    // 
+  ND_IF,        // if
+  ND_ELSE,      // else
 } NodeKind;
 
 // 抽象構文木のノードの型
@@ -74,6 +78,8 @@ int is_alnum(char c);
 bool consume(char *op);
 Token *consume_ident();
 Token *consume_return();
+Token *consume_if();
+Token *consume_else();
 void expect(char *op);
 int expect_number();
 bool at_eof();
@@ -84,7 +90,7 @@ Node *new_node_num(int val);
 LVar *find_lvar(Token *tok);
 
 void program();         // program = stmt*
-Node *stmt();           // stmt = expr ";" | "return" expr ";"
+Node *stmt();           // stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "return" expr ";"
 Node *expr();           // expr = assign
 Node *assign();         // assign = equality ("=" assign)?
 Node *equality();       // equality = relational ("==" relational | "!=" relational)*
