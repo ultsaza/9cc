@@ -41,6 +41,14 @@ Token *consume_else() {
   return tok;
 }
 
+Token *consume_while() {
+  if (token->kind != TK_WHILE)
+    return NULL;
+  Token *tok = token;
+  token = token->next;
+  return tok;
+}
+
 void expect(char *op) {
   if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len))
     error_at(token->str, "'%s'ではありません", op);
@@ -49,7 +57,7 @@ void expect(char *op) {
 
 int expect_number() {
   if (token->kind != TK_NUM)
-    error("数ではありません");
+    error_at(token->str, "数ではありません");
   int val = token->val;
   token = token->next;
   return val;
@@ -117,6 +125,13 @@ Token *tokenize(char *p) {
       continue;
     }
 
+    // while
+    if (startswith(p, "while") && !is_alnum(p[5])) {
+      cur = new_token(TK_WHILE, cur, p, 5);
+      p += 5;
+      continue;
+    }
+
     // 識別子
     if ('a' <= *p && *p <= 'z') {
         cur = new_token(TK_IDENT, cur, p, 0);
@@ -135,7 +150,7 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    error("トークナイズできません");
+    error_at(token->str, "トークナイズできません");
   }
   
   new_token(TK_EOF, cur, p, 0);
@@ -174,32 +189,38 @@ void program() {
   code[i] = NULL;
 }
 
-// stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "return" expr ";"
+// stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt | "return" expr ";"
 Node *stmt() {
   Node *node;
-  Token *tok_return = consume_return(); // freeしたほうが良さそう
-  Token *tok_if = consume_if();
-  Token *tok_else = consume_else();
-  if (tok_return) {
-    node = calloc(1, sizeof(Node));
-    node->kind = ND_RETURN;
-    node->lhs = expr();
-  } else if (tok_if) {
-    node = calloc(1, sizeof(Node));
-    node->kind = ND_IF;
+  if (consume_return()) {
+    node = new_node(ND_RETURN, expr(), NULL); // 右辺不要
+  } 
+  else if (consume_if()) {
+    node = new_node(ND_IF, NULL, NULL);
     expect("(");
     node->lhs = expr();
     expect(")");
     node->rhs = stmt();
-    if (tok_else) {
-      node->kind = ND_ELSE;
-      node->lhs = stmt();
+    
+    if (consume_else()) {
+      Node *else_node = new_node(ND_ELSE, stmt(), NULL);
+      else_node->kind = ND_ELSE;
+      node->rhs = new_node(ND_IF, node->rhs, else_node);
     }
     return node;
-  }
+  } 
+  else if (consume_while()) {
+    node = new_node(ND_WHILE, NULL, NULL);
+    expect("(");
+    node->lhs = expr();
+    expect(")");
+    node->rhs = stmt();
+    return node;
+  }  
   else {
     node = expr();
   }
+
   if (!consume(";"))
     error_at(token->str, "';'ではないトークンです");
   return node;

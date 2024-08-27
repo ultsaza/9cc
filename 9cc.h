@@ -14,6 +14,7 @@ typedef enum {
   TK_RETURN,   // return
   TK_IF,       // if
   TK_ELSE,     // else
+  TK_WHILE,    // while
 } TokenKind;
 
 // トークン型
@@ -42,6 +43,7 @@ typedef enum {
   ND_RETURN,    // 
   ND_IF,        // if
   ND_ELSE,      // else
+  ND_WHILE,     // while
 } NodeKind;
 
 // 抽象構文木のノードの型
@@ -70,6 +72,7 @@ extern Token *token;     // 現在着目しているトークン
 extern char *user_input; // 入力プログラム
 extern Node *code[100];  // コード生成時に使うバッファ
 extern LVar *locals;     // ローカル変数(連結リスト)
+extern int label_count;  // 分岐のラベル
 
 // プロトタイプ宣言
 void error(char *fmt, ...);
@@ -80,6 +83,7 @@ Token *consume_ident();
 Token *consume_return();
 Token *consume_if();
 Token *consume_else();
+Token *consume_while();
 void expect(char *op);
 int expect_number();
 bool at_eof();
@@ -90,7 +94,7 @@ Node *new_node_num(int val);
 LVar *find_lvar(Token *tok);
 
 void program();         // program = stmt*
-Node *stmt();           // stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "return" expr ";"
+Node *stmt();           // stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt　| "return" expr ";"
 Node *expr();           // expr = assign
 Node *assign();         // assign = equality ("=" assign)?
 Node *equality();       // equality = relational ("==" relational | "!=" relational)*
