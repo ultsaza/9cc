@@ -42,6 +42,10 @@ assert 14 'a = 3; b = 5 * 6 - 8; return a + b / 2;'
 assert 2 'if (0) return 3; return 2;'
 assert 3 'if (1) return 3; return 2;'
 
+assert 3 'if (1) return 3; else return 2;'
+#assert 2 'if (0) return 3; else return 2;'
 
+assert 3 'i = 0; while (i < 3) i = i + 1; return i;'
 
+assert 3 'for (i = 0; i < 3; i = i + 1) i; return i;'
 echo OK
