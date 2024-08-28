@@ -43,7 +43,7 @@ assert 2 'if (0) return 3; return 2;'
 assert 3 'if (1) return 3; return 2;'
 
 assert 3 'if (1) return 3; else return 2;'
-#assert 2 'if (0) return 3; else return 2;'
+assert 2 'if (0) return 3; else return 2;'
 
 assert 3 'i = 0; while (i < 3) i = i + 1; return i;'
 

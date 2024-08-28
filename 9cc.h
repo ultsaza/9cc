@@ -15,6 +15,7 @@ typedef enum {
   TK_IF,       // if
   TK_ELSE,     // else
   TK_WHILE,    // while
+  TK_FOR,      // for
 } TokenKind;
 
 // トークン型
@@ -44,6 +45,7 @@ typedef enum {
   ND_IF,        // if
   ND_ELSE,      // else
   ND_WHILE,     // while
+  ND_FOR,       // for
 } NodeKind;
 
 // 抽象構文木のノードの型
@@ -84,6 +86,7 @@ Token *consume_return();
 Token *consume_if();
 Token *consume_else();
 Token *consume_while();
+Token *consume_for();
 void expect(char *op);
 int expect_number();
 bool at_eof();
@@ -94,7 +97,7 @@ Node *new_node_num(int val);
 LVar *find_lvar(Token *tok);
 
 void program();         // program = stmt*
-Node *stmt();           // stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt　| "return" expr ";"
+Node *stmt();           // stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt　| "for" "(" expr? ";" expr? ";" expr? ")" stmt | "return" expr ";"
 Node *expr();           // expr = assign
 Node *assign();         // assign = equality ("=" assign)?
 Node *equality();       // equality = relational ("==" relational | "!=" relational)*

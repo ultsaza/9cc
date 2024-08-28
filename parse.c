@@ -49,6 +49,14 @@ Token *consume_while() {
   return tok;
 }
 
+Token *consume_for() {
+  if (token->kind != TK_FOR)
+    return NULL;
+  Token *tok = token;
+  token = token->next;
+  return tok;
+}
+
 void expect(char *op) {
   if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len))
     error_at(token->str, "'%s'ではありません", op);
@@ -132,6 +140,13 @@ Token *tokenize(char *p) {
       continue;
     }
 
+    // for
+    if (startswith(p, "for") && !is_alnum(p[3])) {
+      cur = new_token(TK_FOR, cur, p, 3);
+      p += 3;
+      continue;
+    }
+
     // 識別子
     if ('a' <= *p && *p <= 'z') {
         cur = new_token(TK_IDENT, cur, p, 0);
@@ -189,7 +204,7 @@ void program() {
   code[i] = NULL;
 }
 
-// stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt | "return" expr ";"
+// stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt | "for" "(" expr? ";" expr? ";" expr? ")" stmt | "return" expr ";"
 Node *stmt() {
   Node *node;
   if (consume_return()) {
@@ -215,12 +230,33 @@ Node *stmt() {
     node->rhs = stmt();
     return node;
   }  
+  else if (consume_for()) {
+    expect("(");
+    node = new_node(ND_FOR, NULL, NULL);
+    if (!consume(";")) {
+      node->lhs = expr();
+      expect(";");
+    } 
+    node->rhs = new_node(ND_FOR, NULL, NULL);
+    if (!consume(";")) {
+      node->rhs->lhs = expr();
+      expect(";");
+    } 
+    node->rhs->rhs = new_node(ND_FOR, NULL, NULL);
+    if (!consume(")")) {
+      node->rhs->rhs->lhs = expr();
+      expect(")");
+    } 
+    node->rhs->rhs->rhs = stmt();
+    return node;
+  }
   else {
     node = expr();
   }
 
   if (!consume(";"))
-    error_at(token->str, "';'ではないトークンです");
+    error_at(token->str, "';'ではないトークンです: '%.*s'", token->len, token->str);
+
   return node;
 }
 
