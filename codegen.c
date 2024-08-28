@@ -23,31 +23,23 @@ void gen(Node *node) {
     return;
   case ND_IF: 
       int label = label_count++;
-      if(node->lhs->kind == ND_ELSE) {
-        gen(node->lhs->lhs);
-      } else {
-        gen(node->lhs);
-      }
+      gen(node->lhs->lhs);
       printf("  pop rax\n");
       printf("  cmp rax, 0\n");
-      if(node->rhs->kind == ND_ELSE) {
+      if(node->rhs) {
         printf("  je  .Lelse%d\n", label);
-        gen(node->rhs->lhs);
-      } else {
-        printf("  je  .Lend%d\n", label);
-        gen(node->rhs);
-      }
-      if (node->rhs->kind == ND_ELSE) {
+        gen(node->lhs->rhs);
         printf("  jmp .Lend%d\n", label);
         printf(".Lelse%d:\n", label);
-        gen(node->rhs->lhs);
-        printf(".Lend%d:\n", label);
+        gen(node->rhs);
       } else {
-        printf(".Lend%d:\n", label);
+        printf("  je  .Lend%d\n", label);
+        gen(node->lhs->rhs);
       }
+      printf(".Lend%d:\n", label);
       return;
   case ND_ELSE:
-      gen(node->rhs->rhs);
+      gen(node->lhs);
       return;
   case ND_WHILE:
       label = label_count++;

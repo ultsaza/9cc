@@ -197,15 +197,13 @@ Node *stmt() {
   } 
   else if (consume_if()) {
     node = new_node(ND_IF, NULL, NULL);
+    node->lhs = new_node(ND_IF, node, NULL);
     expect("(");
-    node->lhs = expr();
+    node->lhs->lhs = expr();
     expect(")");
-    node->rhs = stmt();
-    
+    node->lhs->rhs = stmt();
     if (consume_else()) {
-      Node *else_node = new_node(ND_ELSE, stmt(), NULL);
-      else_node->kind = ND_ELSE;
-      node->rhs = new_node(ND_IF, node->rhs, else_node);
+      node->rhs = new_node(ND_ELSE, stmt(), NULL);
     }
     return node;
   } 
