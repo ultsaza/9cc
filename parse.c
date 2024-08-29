@@ -57,6 +57,8 @@ Token *consume_for() {
   return tok;
 }
 
+
+
 void expect(char *op) {
   if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len))
     error_at(token->str, "'%s'ではありません", op);
@@ -107,7 +109,7 @@ Token *tokenize(char *p) {
     }
 
     // 1文字の演算子
-    if (strchr("+-*/()<>=;", *p)) {
+    if (strchr("+-*/()<>=;{}", *p)) {
       cur = new_token(TK_RESERVED, cur, p++, 1);
       continue;
     }
@@ -204,7 +206,7 @@ void program() {
   code[i] = NULL;
 }
 
-// stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt | "for" "(" expr? ";" expr? ";" expr? ")" stmt | "return" expr ";"
+// stmt = expr ";" | "{" stmt* "}" | "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt | "for" "(" expr? ";" expr? ";" expr? ")" stmt | "return" expr ";"
 Node *stmt() {
   Node *node;
   if (consume_return()) {
@@ -248,6 +250,16 @@ Node *stmt() {
       expect(")");
     } 
     node->rhs->rhs->rhs = stmt();
+    return node;
+  }
+  else if (consume("{")) {
+    node = new_node(ND_BLOCK, NULL, NULL);
+    node->block = calloc(1, sizeof(NodeVector));
+    node->block->data = calloc(100, sizeof(Node));
+    node->block->size = 0;
+    while (!consume("}")) {
+      node->block->data[node->block->size++] = stmt();
+    }
     return node;
   }
   else {

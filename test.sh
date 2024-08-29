@@ -47,5 +47,11 @@ assert 2 'if (0) return 3; else return 2;'
 
 assert 3 'i = 0; while (i < 3) i = i + 1; return i;'
 
-assert 3 'for (i = 0; i < 3; i = i + 1) i; return i;'
+assert 200 'for (i = 0; i < 200; i = i + 1) i; return i;'
+
+assert 1 '{return 1;}'
+assert 3 'i = 0; while (i < 3) {i = i + 1;} return i;'
+
+
+
 echo OK

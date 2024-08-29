@@ -46,21 +46,32 @@ typedef enum {
   ND_ELSE,      // else
   ND_WHILE,     // while
   ND_FOR,       // for
+  ND_BLOCK,     // {}
 } NodeKind;
 
-// 抽象構文木のノードの型
+// ブロックに含まれる式を保持するベクタ
+
 typedef struct Node Node;
-struct Node {
-  NodeKind kind; // ノードの型
-  Node *lhs;     // 左辺
-  Node *rhs;     // 右辺
-  int val;       // kindがND_NUMの場合のみ使う
-  int offset;    // kindがND_LVARの場合のみ使う
+typedef struct NodeVector NodeVector;
+struct NodeVector {
+    Node **data;    // データの配列
+    int size;     // 現在の要素数
 };
 
-typedef struct LVar LVar;
+// 抽象構文木のノードの型
+struct Node {
+  NodeKind kind;     // ノードの型
+  Node *lhs;         // 左辺
+  Node *rhs;         // 右辺
+  int val;           // kindがND_NUMの場合のみ使う
+  int offset;        // kindがND_LVARの場合のみ使う
+  NodeVector *block; // kindがND_BLOCKの場合のみ使う
+};
+
+
 
 // ローカル変数の型
+typedef struct LVar LVar;
 struct LVar {
   LVar *next; // 次の変数かNULL
   char *name; // 変数の名前
@@ -97,7 +108,7 @@ Node *new_node_num(int val);
 LVar *find_lvar(Token *tok);
 
 void program();         // program = stmt*
-Node *stmt();           // stmt = expr ";" | "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt　| "for" "(" expr? ";" expr? ";" expr? ")" stmt | "return" expr ";"
+Node *stmt();           // stmt = expr ";" | "{" stmt* "}"　| "if" "(" expr ")" stmt ("else" stmt)? | "while" "(" expr ")" stmt　| "for" "(" expr? ";" expr? ";" expr? ")" stmt | "return" expr ";"
 Node *expr();           // expr = assign
 Node *assign();         // assign = equality ("=" assign)?
 Node *equality();       // equality = relational ("==" relational | "!=" relational)*
